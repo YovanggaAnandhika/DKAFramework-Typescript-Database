@@ -1,14 +1,14 @@
-<h1 style="text-align:center">DKA MARIADB MODULE</h1>
+<h1 style="text-align:center">DKA DATABASE MODULE</h1>
 <p style="text-align:center">this is a part module componen from or to DKAFramework</p>
 <br>
 
 ## Status
 
-![GitHub last commit](https://img.shields.io/github/last-commit/YovanggaAnandhika/MariaDB)
-![GitHub contributors](https://img.shields.io/github/contributors/YovanggaAnandhika/MariaDB)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/YovanggaAnandhika/MariaDB)
-![GitHub issues](https://img.shields.io/github/issues/YovanggaAnandhika/MariaDB)
-![GitHub repo size](https://img.shields.io/github/repo-size/YovanggaAnandhika/MariaDB)
+![GitHub last commit](https://img.shields.io/github/last-commit/YovanggaAnandhika/DKAFramework-Typescript-Database)
+![GitHub contributors](https://img.shields.io/github/contributors/YovanggaAnandhika/DKAFramework-Typescript-Database)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/YovanggaAnandhika/DKAFramework-Typescript-Database)
+![GitHub issues](https://img.shields.io/github/issues/YovanggaAnandhika/DKAFramework-Typescript-Database)
+![GitHub repo size](https://img.shields.io/github/repo-size/YovanggaAnandhika/DKAFramework-Typescript-Database)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 
 
@@ -77,9 +77,9 @@ XML                      4 mins              ░░░░░░░░░░░�
 Simple Installation
 
 with npm
-``` npm install @dkaframework/mariadb@<version>```<br/>
+``` npm install @dkaframework/database@<version>```<br/>
 with yarn install
-``` yarn add -D @dkaframework/mariadb@<version> ```
+``` yarn add -D @dkaframework/database@<version> ```
 
 
 Read More About [Installation Guide](https://github.com/YovanggaAnandhika/MariaDB/blob/master/INSTALL.md) On the Website
@@ -92,12 +92,13 @@ Simple Used Module
 with ESCMA SCRIPT
 ```typescript
 
-   import MariaDB from "@dkaframework/mariadb";
+   import Database, { MariaDB, Sqlite } from "@dkaframework/database";
    
    (async () => {
         /** ... another code ... **/
-                   
-        let instance = await new MariaDB(MariaDBConfig);
+            // let instance = await new Database.MariaDB(MariaDBConfig);
+            // let instance = await new Database.Sqlite(SqliteDBConfig);
+        let instance = await new Database.MariaDB(MariaDBConfig | SqliteConfig);
         await instance.Read(tableName, Rules)
             .then(async (result) => {
                 console.log(result);
