@@ -135,7 +135,7 @@ export interface RulesInsert extends Rules {
 }
 
 
-export interface ClassInterfaces {
+export interface MariaDBClassInterfaces {
 
     CreateDB(DatabaseName : string, Rules : RulesCreateDatabase) : Promise<CallbackCreateDatabase>;
 

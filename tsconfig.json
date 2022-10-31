@@ -2,7 +2,7 @@
   // Change this to match your project
   "include": [ "src/**/*" ],
   "compilerOptions": {
-    "target": "ES5",
+    "target": "ES6",
     "module": "CommonJS",
     "lib": ["es2017", "es7", "es5", "es6", "dom"],
     // Tells TypeScript to read JS files, as

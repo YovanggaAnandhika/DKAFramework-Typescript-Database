@@ -1,8 +1,8 @@
-import {Connection, createConnection, createPool, createPoolCluster, Pool} from "mariadb";
-import GlobalConfig, {CreateDatabaseConfig, CreateTableConfig, InsertDataConfig, SelectConfigDefault} from "./Config";
+import GlobalConfig, {CreateDatabaseConfig, CreateTableConfig, InsertDataConfig, SelectConfigDefault} from "./MariaDB/Config";
 import crypto from "crypto";
-import {MariaDBConstructorConfig} from "./Interfaces/Config";
-import {isArray, isObject, merge, extend, isTypedArray, result} from "lodash";
+import { Pool, Connection } from "mariadb";
+import {MariaDBConstructorConfig} from "./MariaDB/Interfaces/Config";
+import _, {isArray, isObject, merge, extend} from "lodash";
 import {
     Callback,
     CallbackBackup, CallbackCreateDatabase,
@@ -13,27 +13,30 @@ import {
     CallbackSelect,
     CallbackUpdate,
     metadata
-} from "./Interfaces/Callback";
+} from "./MariaDB/Interfaces/Callback";
 import moment, {now} from "moment-timezone";
 import {
-    ClassInterfaces,
     RulesInsert,
     RulesDelete,
     RulesSelect,
     RulesUpdate,
-    RulesCreateDataPrimary,
     ExtendsOptions,
-    RulesCreateTable, RulesCreateDatabase
-} from "./Interfaces/Class";
-import {Instance, Method} from "./Type/types";
-import {default as mysqlDump, DumpReturn} from "mysqldump";
-import fs from "fs";
-import path from "path";
-import {default as mEncryption} from "@dkaframework/encryption";
+    RulesCreateTable, RulesCreateDatabase, MariaDBClassInterfaces
+} from "./MariaDB/Interfaces/Class";
+import {Instance, Method} from "./MariaDB/Type/types";
+
+import { DumpReturn } from "mysqldump/dist/mysqldump";
+import {Database, sqlite3} from "sqlite3";
+import * as fs from "fs";
+import {
+    SqliteFunctionCallback,
+    SqliteFunctionConfiguration
+} from "./Sqlite/Interfaces/Class";
+import DKASqlite from "./Sqlite/Class/DKASqlite";
 
 /**
  * @class MariaDB
- * @implements ClassInterfaces
+ * @implements MariaDBClassInterfaces
  * @property { CreateTable } MariaDB.CreateTable
  * @property { Select } MariaDB.Select
  * @property { Insert } MariaDB.Insert
@@ -43,8 +46,7 @@ import {default as mEncryption} from "@dkaframework/encryption";
  * The Class Is a MariaDB Function For Database MariaDB
  * The Base In DKAFramework Application
  */
-class MariaDB implements ClassInterfaces {
-
+export class MariaDB implements MariaDBClassInterfaces {
 
     /**
      *
@@ -60,31 +62,24 @@ class MariaDB implements ClassInterfaces {
     get timeStart(): number {
         return this._timeStart;
     }
-
     set timeStart(value: number) {
         this._timeStart = value;
     }
-
     get mKey(): any[] {
         return this._mKey;
     }
-
     set mKey(value: any[]) {
         this._mKey = value;
     }
-
     get mVal(): any[] {
         return this._mVal;
     }
-
     set mVal(value: any[]) {
         this._mVal = value;
     }
-
     get mWhere(): any[] {
         return this._mWhere;
     }
-
     set mWhere(value: any[]) {
         this._mWhere = value;
     }
@@ -97,11 +92,19 @@ class MariaDB implements ClassInterfaces {
         this._mSetData = value;
     }
 
+    get mSearchAdd(): string {
+        return this._mSearchAdd;
+    }
+
+    set mSearchAdd(value: string) {
+        this._mSearchAdd = value;
+    }
+
     private SqlScript : string = "";
 
     private mMethod : Method = "READ";
     private mInstance : Instance;
-    private mSearchAdd : string = ``;
+    private _mSearchAdd : string = ``;
 
     private _mConfig : MariaDBConstructorConfig = GlobalConfig;
 
@@ -130,6 +133,7 @@ class MariaDB implements ClassInterfaces {
      */
     constructor(config? : MariaDBConstructorConfig) {
         this.mConfig = merge(GlobalConfig, config);
+        const { createConnection, createPool, createPoolCluster} = require("mariadb");
         switch (this.mConfig.engine) {
             case "Connection" :
                 this.mInstance = createConnection(this.mConfig);
@@ -146,6 +150,7 @@ class MariaDB implements ClassInterfaces {
     }
 
     async CreateDB(DatabaseName : string, Rules : RulesCreateDatabase = CreateDatabaseConfig) : Promise<CallbackCreateDatabase> {
+
         let mRules: RulesCreateDatabase = await merge(CreateDatabaseConfig,{
             encryption : this.mConfig.encryption
         }, Rules);
@@ -372,7 +377,7 @@ class MariaDB implements ClassInterfaces {
                 //@@@@@@@@@@@@@@@@@@@
 
                 //**********************************************************
-                Rules.data.map(async (item, index) => {
+                Rules.data.map(async (item : object, index : number) => {
                     this.mKey = [];
                     this.mSetData = [];
                     //######################################################
@@ -420,89 +425,43 @@ class MariaDB implements ClassInterfaces {
      * @return Promise<CallbackSelect | CallbackError> - <b>Promise<CallbackSelect | CallbackError></b><br/>
      * The Return Variable Format
      */
-    async Select(TableName : string, Rules : RulesSelect = SelectConfigDefault): Promise<CallbackSelect> {
-
-        let mRules : RulesSelect = merge(SelectConfigDefault, {
-            encryption : this.mConfig.encryption
-        }, Rules);
-
+    async Select(TableName : string, Rules : RulesSelect = {}): Promise<CallbackSelect> {
+        let mRules : RulesSelect = Rules;
         this.timeStart = new Date().getTime();
         this.mSearchAdd = ``;
+        //console.log(this.mSearchAdd)
 
         return new Promise(async (resolve, rejected) => {
-            if (mRules !== undefined){
-                if (isArray(mRules.search)){
-                    await mRules.search.forEach((item : any) => {
-                        if (isObject(item)){
-                            let mItem : any = item;
-                            Object.keys(mItem).forEach((k) => {
-                                this.mSearchAdd += `\`${k}\`=\'${mItem[k]}\'`;
-                            });
-                        }else{
-                            this.mSearchAdd += ` ${item} `;
-                        }
-                    });
-                }else if (isObject(mRules.search)){
-                    this.mSearchAdd += `\`${mRules.search.coloumName}\` = '${mRules.search.valueName}' `;
-                }
-
-                const UpdateWhere = (mRules.search !== undefined) ? `WHERE ${this.mSearchAdd}` : ``;
-                const SelectColumn = (mRules.column !== undefined && mRules.column.length > 0 ) ? mRules.column : `*`;
-                const SelectLimit = (mRules.limit !== undefined) ? `LIMIT ${mRules.limit}` : ``;
-                const SelectOrderBy = (mRules.orderBy !== undefined && mRules.orderBy.column.length > 0) ? `ORDER BY ${mRules.orderBy.column} ${mRules.orderBy.mode}` : ``;
-                const selectParentAs = (mRules.as !== undefined && mRules.as !== false) ? ` as \`${mRules.as}\`` : ``;
-
-                if (mRules.encryption !== undefined){
-                    if (MariaDB.checkModuleExist("@dkaframework/encryption")) {
-                        let mEncryption = require("@dkaframework/encryption").default;
-
-                        /** Refactor Table Name to Encryption **/
-                        let mTableName = new mEncryption(mRules.encryption).encodeIvSync(TableName);
-                        let mTableNameEncrypt = (mRules.settings?.table) ? mTableName : TableName;
-
-                        /** Refactor Database Name **/
-                        let mDatabase = new mEncryption(mRules.encryption).encodeIvSync(this.mConfig.database);
-                        let mDatabaseEncrypt = (mRules.settings?.database) ? mDatabase : this.mConfig.database;
-                        let mConvertToScript = `\`${mDatabaseEncrypt}\`.`;
-
-                        const mSQL = `SELECT ${SelectColumn} FROM ${mConvertToScript}\`${mTableNameEncrypt}\`${selectParentAs} ${UpdateWhere} \n ${SelectOrderBy} ${SelectLimit}`;
-                        this.mMethod = "READ";
-                        await this.rawQuerySync<CallbackSelect>(mSQL,[], {encryption : mRules.encryption, settings : mRules.settings })
-                            .then(async (result) => {
-                                await resolve(result);
-                            })
-                            .catch(async (error) => {
-                                await rejected(<CallbackError>error);
-                            })
+            if (Array.isArray(mRules.search)){
+                await mRules.search.forEach((item : any) => {
+                    if (isObject(item)){
+                        let mItem : any = item;
+                        Object.keys(mItem).forEach((k) => {
+                            this.mSearchAdd += `\`${k}\`=\'${mItem[k]}\'`;
+                        });
                     }else{
-                        await rejected(<CallbackError>{ status : false, code : 500, msg : `Encryption Module is Declare. but module not installed, please installed first "@dkaframework/encryption" `});
+                        this.mSearchAdd += ` ${item} `;
                     }
-                }else{
-                    const mSQL = `SELECT ${SelectColumn} FROM \`${TableName}\`${selectParentAs} ${UpdateWhere} \n ${SelectOrderBy} ${SelectLimit}`;
-                    this.mMethod = "READ";
-                    await this.rawQuerySync<CallbackSelect>(mSQL,[])
-                        .then(async (result) => {
-                            await resolve(result);
-                        })
-                        .catch(async (error) => {
-                            await rejected(<CallbackError>error);
-                        })
-                }
-            }else{
-                const mSQL = `SELECT * FROM \`${TableName}\` `;
-                this.mMethod = "READ";
-                await this.rawQuerySync<CallbackSelect>(mSQL,[])
-                    .then(async (result) => {
-                        await resolve(result);
-                    })
-                    .catch(async (error) => {
-                        await rejected(<CallbackError>error);
-                    })
+                });
+            }else if (typeof mRules.search === "object"){
+                this.mSearchAdd += `\`${mRules.search.coloumName}\` = '${mRules.search.valueName}' `;
             }
+            const UpdateWhere = (mRules.search !== undefined) ? `WHERE ${this.mSearchAdd}` : ``;
+            const SelectColumn = (mRules.column !== undefined && mRules.column.length > 0 ) ? mRules.column : `*`;
+            const SelectLimit = (mRules.limit !== undefined) ? `LIMIT ${mRules.limit}` : ``;
+            const SelectOrderBy = (mRules.orderBy !== undefined && mRules.orderBy.column.length > 0) ? `ORDER BY ${mRules.orderBy.column} ${mRules.orderBy.mode}` : ``;
+            const selectParentAs = (mRules.as !== undefined && mRules.as !== false) ? ` as \`${mRules.as}\`` : ``;
+
+            const mSQL = `SELECT ${SelectColumn} FROM \`${TableName}\`${selectParentAs} ${UpdateWhere} \n ${SelectOrderBy} ${SelectLimit}`;
+            this.mMethod = "READ";
+            await this.rawQuerySync<CallbackSelect>(mSQL,[])
+                .then(async (result) => {
+                    await resolve(result);
+                })
+                .catch(async (error) => {
+                    await rejected(<CallbackError>error);
+                })
         })
-
-
-
     };
 
     /**
@@ -546,7 +505,7 @@ class MariaDB implements ClassInterfaces {
 
             const UpdateWhere = (Rule.search !== false) ? `WHERE ${this.mWhere}` : ``;
 
-            const mSQL = `UPDATE \`${TableName}\` SET${this.mKey} ${UpdateWhere} `;
+            const mSQL = `UPDATE \`${TableName}\` SET ${this.mKey} ${UpdateWhere} `;
             this.mMethod = "UPDATE";
             await this.rawQuerySync<CallbackUpdate>(mSQL, [])
                 .then(async (result) => {
@@ -975,6 +934,7 @@ class MariaDB implements ClassInterfaces {
 
     async AutoBackup(enabled : Boolean = true) : Promise<CallbackBackup> {
         return new Promise(async (resolve, rejected) => {
+            const path = require("path");
             if (enabled){
                 if (MariaDB.checkModuleExist("mysqldump")){
                     const mysqlDump = require("mysqldump").default;
@@ -1116,5 +1076,47 @@ class MariaDB implements ClassInterfaces {
     }
 }
 
-export default MariaDB;
-export { MariaDB };
+function checkModuleExist(name : string){
+    try {
+        require.resolve(name);
+        return true;
+    }catch (e) {
+        return false;
+    }
+}
+
+
+export function Sqlite (config : SqliteFunctionConfiguration) {
+    let mSqlite : DKASqlite | undefined = undefined;
+    if(fs.existsSync(`${config.filename}`)){
+        switch (typeof config.mode) {
+            case "number":
+                mSqlite = new DKASqlite(config.filename, config.mode, config.key, undefined, config.callback)
+                break;
+            case "undefined" :
+                mSqlite = new DKASqlite(config.filename, undefined, config.key, undefined, config.callback)
+                break;
+            default :
+                mSqlite = new DKASqlite(config.filename, undefined, config.key, undefined)
+                break;
+        }
+    }else{
+        mSqlite = new DKASqlite(config.filename, undefined,config.key, true, async (error) => {
+            if (error) {
+                (config.callback !== undefined) ?
+                    config.callback({ status : false, code : 500, msg : `filename db ${config.filename} is Not Exists`})
+                    : null;
+            }else{
+                (config.callback !== undefined) ?
+                    config.callback({ status : true, code : 200, msg : `filename db ${config.filename} is generated`})
+                    : null;
+            }
+        })
+
+
+    }
+    return mSqlite;
+}
+
+
+export default { MariaDB : MariaDB, Sqlite : Sqlite };
