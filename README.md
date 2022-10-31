@@ -10,7 +10,48 @@
 ![GitHub issues](https://img.shields.io/github/issues/YovanggaAnandhika/DKAFramework-Typescript-Database)
 ![GitHub repo size](https://img.shields.io/github/repo-size/YovanggaAnandhika/DKAFramework-Typescript-Database)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+---
 
+## Installing DKA MariaDB Module
+
+Simple Installation
+
+with npm
+``` npm install @dkaframework/database@<version>```<br/>
+with yarn install
+``` yarn add -D @dkaframework/database@<version> ```
+
+
+Read More About [Installation Guide](https://github.com/YovanggaAnandhika/MariaDB/blob/master/INSTALL.md) On the Website
+Us For More Information.
+
+## Use DKA Framework
+
+Simple Used Module
+
+with ESCMA SCRIPT
+```typescript
+
+   import Database, { MariaDB, Sqlite } from "@dkaframework/database";
+   
+   (async () => {
+        /** ... another code ... **/
+            // let instance = await new Database.MariaDB(MariaDBConfig);
+            // let instance = await new Database.Sqlite(SqliteDBConfig);
+        let instance = await new Database.MariaDB(MariaDBConfig | SqliteConfig);
+        await instance.Read(tableName, Rules)
+            .then(async (result) => {
+                console.log(result);
+            })
+            .catch(async (error) => {
+                console.log(error);
+            });
+        /** .. another code ... **/
+   })();
+    
+```
+
+Read More About [How To Use](https://github.com/YovanggaAnandhika/MariaDB/blob/master/USAGE.md) For How To Details Use.
 
 ## Benefit
 
@@ -69,49 +110,6 @@ XML                      4 mins              ░░░░░░░░░░░�
 <p style="text-align:center">
 <a href="https://www.buymeacoffee.com/celiduba" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-red.png" alt="Buy Me A Coffee" height="40" width="170" ></a>
 </p>
-
----
-
-## Installing DKA MariaDB Module
-
-Simple Installation
-
-with npm
-``` npm install @dkaframework/database@<version>```<br/>
-with yarn install
-``` yarn add -D @dkaframework/database@<version> ```
-
-
-Read More About [Installation Guide](https://github.com/YovanggaAnandhika/MariaDB/blob/master/INSTALL.md) On the Website
-Us For More Information.
-
-## Use DKA Framework
-
-Simple Used Module
-
-with ESCMA SCRIPT
-```typescript
-
-   import Database, { MariaDB, Sqlite } from "@dkaframework/database";
-   
-   (async () => {
-        /** ... another code ... **/
-            // let instance = await new Database.MariaDB(MariaDBConfig);
-            // let instance = await new Database.Sqlite(SqliteDBConfig);
-        let instance = await new Database.MariaDB(MariaDBConfig | SqliteConfig);
-        await instance.Read(tableName, Rules)
-            .then(async (result) => {
-                console.log(result);
-            })
-            .catch(async (error) => {
-                console.log(error);
-            });
-        /** .. another code ... **/
-   })();
-    
-```
-
-Read More About [How To Use](https://github.com/YovanggaAnandhika/MariaDB/blob/master/USAGE.md) For How To Details Use.
 
 ## About Copyright
 
