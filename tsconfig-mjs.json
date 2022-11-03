@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig-base.json",
+  "compilerOptions": {
+    "module": "amd",
+    "outDir": "dist",
+    "target": "ES6"
+  }
+}

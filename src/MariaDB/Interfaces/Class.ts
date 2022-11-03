@@ -20,8 +20,9 @@ export interface RulesSelectOrderBy {
 }
 
 export interface RulesSelectSearch {
-    coloumName? : string | undefined,
-    valueName? : string | undefined
+    coloumName ?: string | undefined,
+    condition : "LIKE" | "=" | "!="
+    data ?: string | bigint | number | undefined
 }
 
 export interface RulesSelectSettings {
@@ -31,9 +32,30 @@ export interface RulesSelectSettings {
     rows ?: boolean | undefined
 }
 
+export interface RulesSelectJoinOnAlias {
+    tableAlias : string | undefined,
+    collName : string | undefined
+}
+export interface RulesSelectJoinOn {
+    collNameFirst : RulesSelectJoinOnAlias,
+    collNameSecond : RulesSelectJoinOnAlias
+}
+export interface RulesSelectJoin {
+    mode ?: | undefined | "INNER" | "ALTER" | "OUTER",
+    column ?: Array<String> | undefined,
+    TableName ?: string | undefined,
+    as ?: string | undefined
+    on ?: RulesSelectJoinOn | undefined
+}
+
+export interface RulesSelectColumn {
+    alias ?: string,
+    name ?: string
+}
 export interface RulesSelect extends Rules {
-    search? : Array<Object | String> | RulesSelectSearch | undefined,
-    column? : Array<String> | undefined,
+    join ?: Array<RulesSelectJoin> | RulesSelectJoin | undefined,
+    search? : Array<RulesSelectSearch> | RulesSelectSearch | undefined,
+    column? : Array<RulesSelectColumn> | Array<string> | undefined,
     limit? : number | undefined,
     orderBy? : RulesSelectOrderBy | undefined
     settings ?: RulesSelectSettings | undefined

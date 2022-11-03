@@ -1,6 +1,6 @@
 {
   "name": "@dkaframework/database",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": {
@@ -12,7 +12,7 @@
   "private": false,
   "scripts": {
     "dev-test": "nodemon --watch src --watch test --exec ts-node test/index.ts",
-    "build": "tsc --build"
+    "build": "rimraf dist/* && tsc --build"
   },
   "config": {
     "forge": {
@@ -27,11 +27,15 @@
     "@types/jsbn": "^1.2.30",
     "@types/lodash": "^4.0.0",
     "@types/mysql": "^2.15.21",
+    "firebase": "^9.13.0",
+    "firebase-admin": "^11.2.0",
     "lodash": "^4.0.0",
     "mariadb": "^2.5.6",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.37",
+    "mongodb": "^4.11.0",
     "mysqldump": "^3.2.0",
+    "rimraf": "^3.0.2",
     "sqlite3": "^5.1.2",
     "tcp-port-used": "^1.0.2",
     "types": "^0.1.1",

@@ -1,6 +1,7 @@
 node_modules
 .idea
 dist
+test
 yarn.lock
 /test/info.losg
 /test/error.log
