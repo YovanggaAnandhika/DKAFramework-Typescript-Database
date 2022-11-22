@@ -28,6 +28,7 @@ import {Instance, Method} from "./Type/types";
 import { DumpReturn } from "mysqldump/dist/mysqldump";
 import {Database, sqlite3} from "sqlite3";
 import * as fs from "fs";
+import {default as mEncryption} from "@dkaframework/encryption";
 
 
 /**
@@ -418,21 +419,66 @@ export class MariaDB implements MariaDBClassInterfaces {
         this.timeStart = new Date().getTime();
         this.mSearchAdd = ``;
         //console.log(this.mSearchAdd)
-
-        return new Promise(async (resolve, rejected) => {
+        let checkJoin : Promise<string> = new Promise(async (resolve, rejected) => {
             let innerType = ``;
+            let On = ``;
+            if (mRules.join !== undefined){
+                if(mRules.as !== undefined){
+                    if (Array.isArray(mRules.join)){
+                        mRules.join.map(async (SelectJoin) => {
+                            let mSelectJoinMode = (SelectJoin.mode !== undefined) ? `${SelectJoin.mode} ` : ``;
+                            let joinAliasTableName = (SelectJoin.as !== undefined) ? `AS \`${SelectJoin.as}\`` : ``;
+                            if (SelectJoin.on !== undefined){
+                                if (SelectJoin.on.collNameFirst.tableAlias !== undefined){
+                                    On = ` ON \`${SelectJoin.on.collNameFirst.tableAlias}\`.\`${SelectJoin.on.collNameFirst.collName}\` = \`${SelectJoin.on.collNameSecond.tableAlias}\`.\`${SelectJoin.on.collNameSecond.collName}\` `;
+                                }else {
+                                    On = ` ON \`${mRules.as}\`.\`${SelectJoin.on.collNameFirst.collName}\` = \`${SelectJoin.on.collNameSecond.tableAlias}\`.\`${SelectJoin.on.collNameSecond.collName}\` `;
+                                }
+                            }else{
+                                On = ``;
+                            }
+                            innerType += `${mSelectJoinMode}JOIN \`${SelectJoin.TableName}\` ${joinAliasTableName} ${On}`;
+                        })
+                    }else if (typeof mRules.join === "object"){
+
+                        let mSelectJoinMode = (mRules.join.mode !== undefined) ? `${mRules.join.mode} ` : ``;
+                        let joinAliasTableName = (mRules.join.as !== undefined) ? `AS \`${mRules.join.as}\`` : ``;
+                        if (mRules.join.on !== undefined){
+                            if (mRules.join.on.collNameFirst.tableAlias !== undefined){
+                                On = ` ON \`${mRules.join.on.collNameFirst.tableAlias}\`.\`${mRules.join.on.collNameFirst.collName}\` = \`${mRules.join.on.collNameSecond.tableAlias}\`.\`${mRules.join.on.collNameSecond.collName}\` `;
+                            }else {
+                                On = ` ON \`${mRules.as}\`.\`${mRules.join.on.collNameFirst.collName}\` = \`${mRules.join.on.collNameSecond.tableAlias}\`.\`${mRules.join.on.collNameSecond.collName}\` `;
+                            }
+                        }else{
+                            On = ``;
+                        }
+
+                        innerType += `${mSelectJoinMode}JOIN \`${mRules.join.TableName}\` ${joinAliasTableName} ${On}`;
+                        console.log(innerType)
+                    }
+                    await resolve(innerType)
+                }else{
+                    await rejected({ status : false, code : 500, msg : `join mode is exist. but parent as not set. please set first`} as CallbackError)
+                }
+            }else{
+                resolve(``)
+            }
+        })
+        return new Promise(async (resolve, rejected) => {
             let SelectColumn = ``;
 
             if (Array.isArray(mRules.search)){
                 await mRules.search.forEach((item  ) => {
                     if (typeof item === "object"){
-                        this.mSearchAdd += `\`${item.coloumName}\` ${item.condition} \'${item.data}\'`;
+                        let mCondition = (item.condition !== undefined) ? item.condition : `=`
+                        this.mSearchAdd += `\`${item.coloumName}\` ${mCondition} \'${item.data}\'`;
                     }else if(isString(item)){
                         this.mSearchAdd += ` ${item} `;
                     }
                 });
             }else if (typeof mRules.search === "object"){
-                this.mSearchAdd += `\`${mRules.search.coloumName}\` ${mRules.search.condition} '${mRules.search.data}' `;
+                let mCondition = (mRules.search.condition !== undefined) ? mRules.search.condition : `=`
+                this.mSearchAdd += `\`${mRules.search.coloumName}\` ${mCondition} '${mRules.search.data}' `;
             }
             const UpdateWhere = (mRules.search !== undefined) ? `WHERE ${this.mSearchAdd}` : ``;
             if (mRules.column !== undefined){
@@ -450,33 +496,22 @@ export class MariaDB implements MariaDBClassInterfaces {
             const SelectLimit = (mRules.limit !== undefined) ? `LIMIT ${mRules.limit}` : ``;
             const SelectOrderBy = (mRules.orderBy !== undefined && mRules.orderBy.column.length > 0) ? `ORDER BY ${mRules.orderBy.column} ${mRules.orderBy.mode} ` : ` `;
             const selectParentAs = (mRules.as !== undefined && mRules.as !== false) ? ` AS \`${mRules.as}\` ` : ` `;
-            if (mRules.join !== undefined){
-                if (Array.isArray(mRules.join)){
-                    mRules.join.map(async (SelectJoin) => {
-                        let mSelectJoinMode = (SelectJoin.mode !== undefined) ? `${SelectJoin.mode} ` : ``;
-                        let joinAliasTableName = (SelectJoin.as !== undefined) ? `AS \`${SelectJoin.as}\`` : ``;
-                        let On = (SelectJoin.on !== undefined) ?
-                            `ON \`${SelectJoin.on.collNameFirst.tableAlias}\`.\`${SelectJoin.on.collNameFirst.collName}\` = \`${SelectJoin.on.collNameSecond.tableAlias}\`.\`${SelectJoin.on.collNameSecond.collName}\` ` : ``;
-                        innerType += `${mSelectJoinMode}JOIN \`${SelectJoin.TableName}\` ${joinAliasTableName} ${On}`;
-                    })
-                }else if (typeof mRules.join === "object"){
-                    let mSelectJoinMode = (mRules.join.mode !== undefined) ? `${mRules.join.mode} ` : ``;
-                    let joinAliasTableName = (mRules.join.as !== undefined) ? `AS \`${mRules.join.as}\`` : ``;
-                    let On = (mRules.join.on !== undefined) ?
-                        ` ON \`${mRules.join.on.collNameFirst.tableAlias}\`.\`${mRules.join.on.collNameFirst.collName}\` = \`${mRules.join.on.collNameSecond.tableAlias}\`.\`${mRules.join.on.collNameSecond.collName}\` ` : ``;
-                    innerType += `${mSelectJoinMode}JOIN \`${mRules.join.TableName}\` ${joinAliasTableName} ${On}`;
-                }
-            }
+            await checkJoin
+                .then(async (innerType) => {
+                    const mSQL = `SELECT ${SelectColumn} FROM \`${TableName}\`${selectParentAs}${innerType}${UpdateWhere}${SelectOrderBy}${SelectLimit};`;
 
-            const mSQL = `SELECT ${SelectColumn} FROM \`${TableName}\`${selectParentAs}${innerType}${UpdateWhere}${SelectOrderBy}${SelectLimit};`;
-            this.mMethod = "READ";
-            await this.rawQuerySync<CallbackSelect>(mSQL,[])
-                .then(async (result) => {
-                    await resolve(result);
-                })
-                .catch(async (error) => {
+                    this.mMethod = "READ";
+                    await this.rawQuerySync<CallbackSelect>(mSQL,[])
+                        .then(async (result) => {
+                            await resolve(result);
+                        })
+                        .catch(async (error) => {
+                            await rejected(<CallbackError>error);
+                        })
+                }).catch(async (error) => {
                     await rejected(<CallbackError>error);
                 })
+
         })
     };
 
@@ -588,6 +623,28 @@ export class MariaDB implements MariaDBClassInterfaces {
     Remove = this.Delete;
     Hapus = this.Delete;
 
+
+    async Procedure(name : string, params : object) : Promise<any> {
+        return new Promise(async (resolve, rejected) => {
+            this.mKey = [];
+            this.mVal = [];
+
+            Object.keys(params).map(async (key : string) => {
+                this.mKey.push(`?`);
+                // @ts-ignore
+                this.mVal.push(params[key])
+            })
+            this.mMethod = "PROCCEDURE";
+            let mSQL = `CALL \`${name}\`(${this.mKey})`;
+            this.rawQuerySync(mSQL,this.mVal)
+                .then(async (result) => {
+                    resolve(result)
+                })
+                .catch(async (error) => {
+                    rejected(error)
+                })
+        })
+    }
     /**
      *
      * @param {string} SQLString
@@ -811,6 +868,28 @@ export class MariaDB implements MariaDBClassInterfaces {
                                                     status: false,
                                                     code: 404,
                                                     msg: `Succeeded, But No Data Changed`,
+                                                    metadata: metadata
+                                                });
+                                                await PoolConnection.release();
+                                            }
+                                            break;
+                                        case "PROCCEDURE" :
+                                            let mRow = rows[0];
+                                            if (mRow.length > 0) {
+                                                await resolve(<T>{
+                                                    status: true,
+                                                    code: 200,
+                                                    msg: `successful, your data has been read`,
+                                                    data: mRow,
+                                                    metadata: metadata
+                                                });
+                                                await PoolConnection.release();
+
+                                            } else {
+                                                await rejected({
+                                                    status: false,
+                                                    code: 404,
+                                                    msg: `Succeeded, But No Data Found`,
                                                     metadata: metadata
                                                 });
                                                 await PoolConnection.release();

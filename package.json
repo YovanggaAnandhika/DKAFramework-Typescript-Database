@@ -1,6 +1,6 @@
 {
   "name": "@dkaframework/database",
-  "version": "1.0.5",
+  "version": "1.0.20",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": {
@@ -13,13 +13,6 @@
   "scripts": {
     "dev-test": "nodemon --watch src --watch test --exec ts-node test/index.ts",
     "build": "rimraf dist/* && tsc --build"
-  },
-  "config": {
-    "forge": {
-      "electronRebuildConfig": {
-        "onlyModules": []
-      }
-    }
   },
   "dependencies": {
     "@dkaframework/encryption": "^1.0.1",

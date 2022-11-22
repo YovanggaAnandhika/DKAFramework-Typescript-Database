@@ -20,9 +20,9 @@ export interface RulesSelectOrderBy {
 }
 
 export interface RulesSelectSearch {
-    coloumName ?: string | undefined,
-    condition : "LIKE" | "=" | "!="
-    data ?: string | bigint | number | undefined
+    coloumName ?: string
+    condition ?: "LIKE" | "=" | "!=" | undefined
+    data ?: string | bigint | number
 }
 
 export interface RulesSelectSettings {
@@ -33,7 +33,7 @@ export interface RulesSelectSettings {
 }
 
 export interface RulesSelectJoinOnAlias {
-    tableAlias : string | undefined,
+    tableAlias ?: string | undefined,
     collName : string | undefined
 }
 export interface RulesSelectJoinOn {

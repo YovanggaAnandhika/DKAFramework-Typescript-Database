@@ -1,7 +1,15 @@
-import Database, {Firestore, MariaDB} from "./../src";
+import Database, {Firestore, MariaDB, MongoDB} from "./../src";
+import path from "path";
 
 (async () => {
 
+
+    /*MongoDB({
+        host : "localhost",
+        port : 2833,
+    }).then(async (res) => {
+
+    })*/
 
     /*let db = new Firestore({
         options : {
@@ -24,46 +32,41 @@ import Database, {Firestore, MariaDB} from "./../src";
 
 
 
-    let db = new MariaDB({
+    /*let db = new MariaDB({
         user : "developer",
         password : "Cyberhack2010",
-        database : "akuntaris"
-    });
+        database : "nd_parking"
+    });*/
 
-    await db.Select(`akuntaris-user_login`, {
+    /*await db.Procedure("TEST", {
+        id : 2
+    })
+        .then(async (res) => {
+            console.log(res)
+        })
+        .catch(async (error) => {
+            console.error(error)
+        })*/
+    /*await db.Select(`parking_user_login`, {
         as : `login`,
-        column : [
-            { alias : `login`, name : `id`},
-            { alias : `sess`, name : `id`}
-        ],
-        /*column : [
+        /!*column : [
             `id`,
             `name`
-        ],*/
-        join : [
-            {
-                mode : "INNER",
-                as : `db`,
-                TableName : `akuntaris-user_session`,
-                on : {
-                    collNameFirst : { tableAlias : `sess`, collName : `id_user_login`},
-                    collNameSecond : { tableAlias : `log`, collName : `id_user_login`}
-                }
+        ],*!/
+        join : {
+            mode : "INNER",
+            as : `corporation`,
+            TableName : `parking_system_corporation`,
+            on : {
+                collNameFirst : { collName : `id_system_corporation`},
+                collNameSecond : { tableAlias : `corporation`, collName : `id_system_corporation`}
             }
-        ],
-        limit : 1,
-        orderBy : {
-          mode : "ASC",
-          column : [
-              `id_user_login`
-          ]
-        },
-        search : { coloumName : "test", condition : "=", data : `hai`}
+        }
     }).then(async (res) => {
-        console.log(res.metadata?.sqlRaw)
+        console.log(res)
     }).catch(async (error) => {
-        console.log(error.metadata.sqlRaw)
-    });
+        console.log(error)
+    });*/
 
     /*
         .then(async (res) => {
@@ -83,15 +86,16 @@ import Database, {Firestore, MariaDB} from "./../src";
             console.log(JSON.stringify(error))
         });*/
 
-    /*let db = await Database.Sqlite({
+    let db = await Database.Sqlite({
         filename : path.join(__dirname,"./test.db"),
-        key : "Cyberhack2010ejhfskuhfe8e3hr983hfnkj",
+        key : "Cyberhack2010",
         callback : async (error) => {
             console.log(error)
         }
-    })*/
+    })
 
-    /*db?.CreateTable(`test`,{
+    db?.CreateTable(`test`,{
+        ifNotExist : true,
         data : [
             { coloumn : `user`, type : "TEXT"}
         ]
@@ -101,11 +105,12 @@ import Database, {Firestore, MariaDB} from "./../src";
     })
     .catch(async (error) => {
         console.log(JSON.stringify(error))
-    });*/
+    });
 
-    /*await db?.Insert(`test`, {
-        data : {
-            user : "developer"
+    await db?.Select("test", {
+        search : {
+            coloumName : "user",
+            data : "developer 2"
         }
     })
     .then(async (res) => {
@@ -113,7 +118,7 @@ import Database, {Firestore, MariaDB} from "./../src";
     })
     .catch(async (error) => {
         console.log(JSON.stringify(error))
-    });*/
+    });
 
 
     /*await db?.Select()
