@@ -34,7 +34,7 @@ export interface RulesSelectSettings {
 
 export interface RulesSelectJoinOnAlias {
     tableAlias ?: string | undefined,
-    collName : string | undefined
+    collName : string | undefined | "ROW_ID"
 }
 export interface RulesSelectJoinOn {
     collNameFirst : RulesSelectJoinOnAlias,

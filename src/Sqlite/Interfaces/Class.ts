@@ -26,6 +26,7 @@ export interface SqliteFunctionConfiguration {
     logger ?: boolean,
     mode ?: number,
     key ?: string,
+    verbose ?: boolean,
     callback ?: SqliteInstanceCallback | undefined
 }
 

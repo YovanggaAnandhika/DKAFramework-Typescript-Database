@@ -10,7 +10,7 @@ export interface OptionsSelectDKASqlite {
     as? : false | string,
     column ?: Array<string>,
     join ?: Array<RulesSelectJoin> | RulesSelectJoin | undefined,
-    search ?: OptionsSelectDKASqliteSearch | Array<OptionsSelectDKASqliteSearch>
+    search ?: OptionsSelectDKASqliteSearch | Array<OptionsSelectDKASqliteSearch | string>
 }
 
 

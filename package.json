@@ -1,6 +1,6 @@
 {
   "name": "@dkaframework/database",
-  "version": "1.0.20",
+  "version": "1.0.28",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": {
@@ -15,11 +15,12 @@
     "build": "rimraf dist/* && tsc --build"
   },
   "dependencies": {
-    "@dkaframework/encryption": "^1.0.1",
+    "@dkaframework/encryption": "^1.0.3",
     "@journeyapps/sqlcipher": "^5.3.1",
     "@types/jsbn": "^1.2.30",
     "@types/lodash": "^4.0.0",
     "@types/mysql": "^2.15.21",
+    "@types/node": "^18.13.0",
     "firebase": "^9.13.0",
     "firebase-admin": "^11.2.0",
     "lodash": "^4.0.0",
@@ -29,7 +30,7 @@
     "mongodb": "^4.11.0",
     "mysqldump": "^3.2.0",
     "rimraf": "^3.0.2",
-    "sqlite3": "^5.1.2",
+    "sqlite3": "^5.1.4",
     "tcp-port-used": "^1.0.2",
     "types": "^0.1.1",
     "typescript": "^4.7.4",

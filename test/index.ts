@@ -1,6 +1,7 @@
 import Database, {Firestore, MariaDB, MongoDB} from "./../src";
 import path from "path";
 
+
 (async () => {
 
 
@@ -86,61 +87,24 @@ import path from "path";
             console.log(JSON.stringify(error))
         });*/
 
-    let db = await Database.Sqlite({
-        filename : path.join(__dirname,"./test.db"),
-        key : "Cyberhack2010",
-        callback : async (error) => {
-            console.log(error)
-        }
-    })
-
-    db?.CreateTable(`test`,{
-        ifNotExist : true,
-        data : [
-            { coloumn : `user`, type : "TEXT"}
-        ]
-    })
-    .then(async (res) => {
-        console.log(JSON.stringify(res));
-    })
-    .catch(async (error) => {
-        console.log(JSON.stringify(error))
-    });
-
-    await db?.Select("test", {
-        search : {
-            coloumName : "user",
-            data : "developer 2"
-        }
-    })
-    .then(async (res) => {
-        console.log(JSON.stringify(res));
-    })
-    .catch(async (error) => {
-        console.log(JSON.stringify(error))
-    });
-
-
-    /*await db?.Select()
-    .then(async (res) => {
-        console.log(JSON.stringify(res));
-    })
-    .catch(async (error) => {
-        console.log(JSON.stringify(error))
-    });*/
-
-
-    /*await db?.Delete(`test`, {
-        search : {
-            _rowId_ : 4
-        }
-    })
-        .then(async (res) => {
-            console.log(JSON.stringify(res));
+    let mDB = await Database.Sqlite({ filename : path.resolve(__dirname,"./dka.dka"), key : "Cyberhack2010" })
+        .then(async (DB) => {
+            await DB.Select("__dka_test__")
+                .then(async (res) => {
+                    console.log(res)
+                }).catch(async (error) => {
+                console.error(error)
+            })
+        }).catch(async (error) => {
+            console.error(error)
         })
-        .catch(async (error) => {
-            console.log(JSON.stringify(error))
-        });*/
+    /*
+    mDB.Select("__dka_test__")
+        .then(async (res) => {
+            console.log(res)
+        }).catch(async (error) => {
+        console.error(error)
+    })*/
 
 
 })();
