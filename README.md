@@ -1,3 +1,12 @@
+# ⛔️ DEPRECATED
+
+This repository is now deprecated. We moved to a new mono repository architecture containing all of Ledger Live JavaScript Ecosystem that you can find [here](https://github.com/YovanggaAnandhika/DKAFramework-Typescript). 
+You can follow the [migration guide]("") to help you make the transition.
+
+<h1 style="text-align:center">DKA SERVER MODULE</h1>
+<p style="text-align:center">this is a part module component from or to DKAFramework</p>
+<br>
+
 <h1 style="text-align:center">DKA DATABASE MODULE</h1>
 <p style="text-align:center">this is a part module componen from or to DKAFramework</p>
 <br>
